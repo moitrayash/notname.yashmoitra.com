@@ -181,6 +181,12 @@
       }
     }
 
+    if (data.footnotes && data.footnotes.length) {
+      contentHTML = contentHTML.replace(/\[(\d+)\]/g, function (mm, num) {
+        return '<a class="fn-ref" id="fnref' + num + '" href="#fn' + num + '">[' + num + ']</a>';
+      });
+    }
+
     var dateHTML    = data.subtext ? '<p class="item-date">' + esc(data.subtext) + '</p>' : '';
     var headingHTML = data.heading ? '<p class="item-meta"><em>' + esc(data.heading) + '</em></p>' : '';
 
@@ -188,7 +194,12 @@
     if (data.footnotes && data.footnotes.length) {
       footnotesHTML = '<div class="footnotes"><h4>Notes</h4>';
       data.footnotes.forEach(function (n) {
-        footnotesHTML += '<p class="footnote">' + fmt(n) + '</p>';
+        var fm = /^\[(\d+)\]\s*([\s\S]*)$/.exec(n);
+        if (fm) {
+          footnotesHTML += '<p class="footnote" id="fn' + fm[1] + '"><a href="#fnref' + fm[1] + '">[' + fm[1] + ']</a> ' + fmt(fm[2]) + '</p>';
+        } else {
+          footnotesHTML += '<p class="footnote">' + fmt(n) + '</p>';
+        }
       });
       footnotesHTML += '</div>';
     }
@@ -222,7 +233,7 @@
       publicationHTML +
       '<nav class="item-page-nav" aria-label="Work navigation">' +
         prevLink +
-        '<a href="#' + catId + '" class="back-link">Back</a>' +
+        '<a href="#' + catId + '" class="back-link" style="margin-bottom:0">Back to ' + esc(category) + '</a>' +
         nextLink +
       '</nav>';
 
@@ -255,12 +266,13 @@
   function route() {
     if (!authorized) return; // nothing routable until unlocked
     var hash = window.location.hash || '';
+    if (hash.indexOf('#fn') === 0) return; // footnote anchors: keep view, native scroll
     if (hash.indexOf('#/work/') === 0) {
       var slug = hash.substring(7);
       var meta = workMap[slug];
       if (!meta) { showNotFound(slug); return; } // hidden/unknown => not found
       fetchWork(slug).then(function (data) {
-        renderWork(meta, Object.assign({}, meta, data));
+        renderWork(meta, Object.assign({}, data, meta));
       }).catch(function () { showNotFound(slug); });
     } else {
       showMain(hash);
