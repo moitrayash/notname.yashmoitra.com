@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Not Name</title>
+<meta name="description" content="Not Name" />
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.8;
+}
+
+/* ===== Layout ===== */
+.main-view > * { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+
+.main-view > header { padding: 60px 20px 40px; text-align: center; max-width: 800px; margin: 0 auto; }
+.main-view > nav { padding: 40px 20px 60px; text-align: center; max-width: 800px; margin: 0 auto; }
+.main-view > main { padding: 20px 20px 0; max-width: 800px; margin: 0 auto; }
+.main-view > footer { padding: 60px 20px 40px; max-width: 800px; margin: 0 auto; }
+
+/* ===== Header ===== */
+h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 48px;
+  font-weight: normal;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+
+.header-line { width: 100px; height: 1px; background: #000; margin: 0 auto; }
+
+.definition {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16px;
+  color: #333;
+  margin-top: -10px;
+  margin-bottom: 15px;
+}
+
+.author-name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  font-style: italic;
+  color: #000;
+  margin: 15px 0 30px;
+}
+
+/* ===== Navigation ===== */
+nav a {
+  color: #000;
+  text-decoration: none;
+  font-size: 16px;
+  margin: 0 15px;
+  transition: opacity .15s ease;
+}
+nav a:hover { text-decoration: underline; }
+
+/* ===== Category sections ===== */
+section { margin-bottom: 100px; padding-top: 40px; }
+
+.category-heading {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 36px;
+  font-weight: normal;
+  margin-bottom: 60px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* ===== Work list ===== */
+.work-list { list-style: none; padding: 0; text-align: center; }
+.work-item { margin-bottom: 12px; }
+.work-item a { color: #000; text-decoration: none; transition: opacity .15s ease; }
+.work-item a:hover { text-decoration: underline; }
+
+/* ===== Footer ===== */
+footer {
+  text-align: center;
+  padding: 60px 0 40px;
+  font-size: 14px;
+  color: #666;
+  border-top: 1px solid #000;
+  margin-top: 80px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  h1 { font-size: 36px; }
+  .category-heading { font-size: 28px; }
+  nav a { display: inline-block; margin: 8px 10px; font-size: 14px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="mainView" class="main-view">
+    <header>
+      <h1>Not Name</h1>
+      <p class="definition">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="author-name">Yours,</p>
+      <div class="header-line"></div>
+    </header>
+
+    <nav aria-label="Category navigation">
+      <a href="#prose">Prose</a> | <a href="#poetry">Poetry</a>
+    </nav>
+
+    <main>
+      <section id="prose">
+        <h2 class="category-heading">Prose</h2>
+        <ul class="work-list">
+          <li class="work-item"><a href="#">a murkiness in bangkok</a></li>
+          <li class="work-item"><a href="#">tias</a></li>
+        </ul>
+      </section>
+
+      <section id="poetry">
+        <h2 class="category-heading">Poetry</h2>
+        <ul class="work-list">
+          <li class="work-item"><a href="#">a murkiness in bangkok</a></li>
+          <li class="work-item"><a href="#">tias</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p>Not Name (2026)</p>
+    </footer>
+  </div>
+</div>
+</body>
+</html>
