@@ -1,4 +1,13 @@
 {
+  "Poems": {
+    "": [
+      {
+        "name": "A Good Deal",
+        "shortname": "a-good-deal",
+        "year": 2026
+      }
+    ]
+  },
   "Prose": {
     "": [
       {
@@ -10,6 +19,16 @@
       {
         "name": "tias",
         "shortname": "tias",
+        "year": 2026
+      }
+    ]
+  },
+  "Ramblings": {
+    "": [
+      {
+        "name": "april 8th",
+        "shortname": "april-8th",
+        "subtext": "April 8th, 2026",
         "year": 2026
       }
     ]
