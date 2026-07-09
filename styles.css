@@ -167,4 +167,9 @@ footer {
   .category-heading { font-size: 28px; }
   .item-title { font-size: 32px; }
   nav a { display: inline-block; margin: 8px 10px; font-size: 14px; }
+
+  /* stack prev / back / next vertically so long titles don't get cramped */
+  .item-page-nav { flex-direction: column; gap: 22px; margin: 60px 0 20px; }
+  .item-page-nav > * { width: 100%; }
+  .item-page-nav .nav-placeholder { display: none; }
 }
