@@ -33,6 +33,13 @@
       {
         "name": "One-and-a-Half Asses",
         "shortname": "one-and-a-half-asses",
+        "subtext": "March 16, 2026",
+        "year": 2026
+      },
+      {
+        "name": "An entirely expected surprise",
+        "shortname": "an-entirely-expected-surprise",
+        "subtext": "March 12, 2026",
         "year": 2026
       }
     ]
