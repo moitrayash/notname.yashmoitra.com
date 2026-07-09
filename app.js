@@ -9,6 +9,11 @@
  *   1. Add an entry to data/index.json
  *   2. Create data/<slug>.json with the content
  *   That's it. No touching app.js or index.html.
+ *
+ * Inline links: within a content line or footnote you may write a
+ * markdown-style link, e.g. [Asfi](#/work/tias) for an internal work
+ * page or [text](https://example.com) for an external link. All other
+ * text is HTML-escaped.
  */
 (function () {
   'use strict';
@@ -33,6 +38,20 @@
       .replace(/>/g,'&gt;')
       .replace(/"/g,'&quot;')
       .replace(/'/g,'&#039;');
+  }
+
+  /* Escape, then linkify markdown-style [label](href) where href is an
+   * internal work route (#/work/slug) or an http(s) URL. Everything is
+   * escaped first, so this stays XSS-safe. */
+  function fmt(v) {
+    return esc(v).replace(
+      /\[([^\]]+)\]\((#\/work\/[A-Za-z0-9\-]+|https?:\/\/[^\s)]+)\)/g,
+      function (m, label, href) {
+        const external = href.charAt(0) !== '#';
+        const attrs = external ? ' target="_blank" rel="noopener"' : '';
+        return '<a href="' + href + '"' + attrs + '>' + label + '</a>';
+      }
+    );
   }
 
   function slugify(v) {
@@ -129,11 +148,11 @@
     if (Array.isArray(data.content)) {
       if (category === 'Poems') {
         contentHTML = data.content.map(function(line) {
-          return line === '' ? '<br>' : '<p class="poem-line">' + esc(line) + '</p>';
+          return line === '' ? '<br>' : '<p class="poem-line">' + fmt(line) + '</p>';
         }).join('');
       } else {
         contentHTML = data.content.map(function(para) {
-          return '<p>' + esc(para) + '</p>';
+          return '<p>' + fmt(para) + '</p>';
         }).join('');
       }
     }
@@ -145,7 +164,7 @@
     if (data.footnotes && data.footnotes.length) {
       footnotesHTML = '<div class="footnotes"><h4>Notes</h4>';
       data.footnotes.forEach(function(n) {
-        footnotesHTML += '<p class="footnote">' + esc(n) + '</p>';
+        footnotesHTML += '<p class="footnote">' + fmt(n) + '</p>';
       });
       footnotesHTML += '</div>';
     }
