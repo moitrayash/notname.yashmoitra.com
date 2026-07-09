@@ -6,13 +6,64 @@
   <title>Not Name</title>
   <meta name="description" content="Not Name" />
   <link rel="stylesheet" href="./styles.css" />
+  <style>
+  /* Access gate */
+  #authgate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;font-family:Georgia,'Times New Roman',serif;}
+  #authgate.hide{display:none;}
+  #authgate .ag-card{width:320px;max-width:88vw;text-align:center;}
+  #authgate h1{font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:normal;letter-spacing:1px;margin:0 0 6px;}
+  #authgate .ag-sub{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#666;margin-bottom:20px;}
+  #authgate input{width:100%;font-family:monospace;font-size:18px;letter-spacing:3px;text-align:center;padding:11px;border:1px solid #ccc;border-radius:6px;margin-bottom:10px;}
+  #authgate button{width:100%;font-family:Arial,Helvetica,sans-serif;font-size:15px;padding:10px;border:1px solid #000;background:#000;color:#fff;border-radius:6px;cursor:pointer;}
+  #authgate button:hover{background:#333;}
+  #authgate .ag-err{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#b00;min-height:18px;margin-top:10px;}
+  #authgate .ag-note{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999;margin-top:18px;}
+  </style>
 </head>
 <body>
-  <div id="app">
-    <!-- Item / work detail view (hidden by default) -->
-    <div id="itemPage" class="item-page" aria-live="polite"></div>
 
-    <!-- Main listing view -->
+<div id="authgate">
+  <div class="ag-card">
+    <h1>Not Name</h1>
+    <div class="ag-sub">Private</div>
+    <form onsubmit="agUnlock();return false;">
+      <input id="agPw" type="password" placeholder="Password" autocomplete="off" autofocus />
+      <button type="submit">Enter</button>
+    </form>
+    <div class="ag-err" id="agErr"></div>
+    <div class="ag-note">Access is limited to invited readers.</div>
+  </div>
+</div>
+<script>
+  /* Access profiles: password -> { hide: [ work shortnames to hide ] }.
+   * Add more passwords to grant different views. hide: [] sees everything;
+   * listing shortnames hides those works. Any collection or section left
+   * with no visible works is dropped automatically (handled in app.js).
+   *
+   * Example future restricted password:
+   *   'SOMEOTHERPASS': { hide: ['april-8th', 'a-good-deal'] }
+   */
+  var ACCESS = {
+    'GUAC6769HEAVY': { hide: [] }
+  };
+
+  function agUnlock() {
+    var el = document.getElementById('agPw');
+    var v = (el.value || '').trim();
+    var profile = ACCESS[v];
+    if (profile) {
+      document.getElementById('authgate').classList.add('hide');
+      document.getElementById('agErr').textContent = '';
+      if (window.NN && window.NN.unlock) window.NN.unlock(profile.hide || []);
+    } else {
+      document.getElementById('agErr').textContent = 'Incorrect password.';
+      el.value = '';
+    }
+  }
+</script>
+
+  <div id="app">
+    <div id="itemPage" class="item-page" aria-live="polite"></div>
     <div id="mainView" class="main-view">
       <header>
         <h1>Not Name</h1>
