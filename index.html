@@ -4,20 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Not Name</title>
-  <meta name="description" content="Not Name" />
-  <link rel="stylesheet" href="./styles.css" />
+  <meta name="robots" content="noindex, nofollow" />
   <style>
-  /* Access gate */
-  #authgate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;font-family:Georgia,'Times New Roman',serif;}
-  #authgate.hide{display:none;}
-  #authgate .ag-card{width:320px;max-width:88vw;text-align:center;}
-  #authgate h1{font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:normal;letter-spacing:1px;margin:0 0 6px;}
-  #authgate .ag-sub{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#666;margin-bottom:20px;}
-  #authgate input{width:100%;font-family:monospace;font-size:18px;letter-spacing:3px;text-align:center;padding:11px;border:1px solid #ccc;border-radius:6px;margin-bottom:10px;}
-  #authgate button{width:100%;font-family:Arial,Helvetica,sans-serif;font-size:15px;padding:10px;border:1px solid #000;background:#000;color:#fff;border-radius:6px;cursor:pointer;}
-  #authgate button:hover{background:#333;}
-  #authgate .ag-err{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#b00;min-height:18px;margin-top:10px;}
-  #authgate .ag-note{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999;margin-top:18px;}
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; }
+    body { background: #fff; color: #000; font-family: Arial, Helvetica, sans-serif; line-height: 1.8; }
+
+    #authgate { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center;
+                justify-content: center; background: #fff; }
+    #authgate.hide { display: none; }
+    #authgate .ag-card { width: 320px; max-width: 88vw; text-align: center; }
+    #authgate h1 { font-family: Georgia, 'Times New Roman', serif; font-size: 32px; font-weight: normal;
+                   letter-spacing: 1px; margin: 0 0 6px; }
+    #authgate .ag-sub { font-size: 13px; color: #666; margin-bottom: 20px; }
+    #authgate input { width: 100%; font-family: monospace; font-size: 18px; letter-spacing: 3px;
+                      text-align: center; padding: 11px; border: 1px solid #ccc; border-radius: 6px;
+                      margin-bottom: 10px; background: #fff; color: #000; }
+    #authgate button { width: 100%; font-family: Arial, Helvetica, sans-serif; font-size: 15px; padding: 10px;
+                       border: 1px solid #000; background: #000; color: #fff; border-radius: 6px; cursor: pointer; }
+    #authgate button:hover { background: #333; }
+    #authgate button[disabled] { background: #666; border-color: #666; cursor: default; }
+    #authgate .ag-err { font-size: 13px; color: #b00; min-height: 18px; margin-top: 10px; }
+    #authgate .ag-note { font-size: 11px; color: #999; margin-top: 18px; }
   </style>
 </head>
 <body>
@@ -26,63 +34,146 @@
   <div class="ag-card">
     <h1>Not Name</h1>
     <div class="ag-sub">Private</div>
-    <form onsubmit="agUnlock();return false;">
+    <form id="agForm" autocomplete="off">
       <input id="agPw" type="password" placeholder="Password" autocomplete="off" autofocus />
-      <button type="submit">Enter</button>
+      <button id="agBtn" type="submit">Enter</button>
     </form>
     <div class="ag-err" id="agErr"></div>
     <div class="ag-note">Access is limited to invited readers.</div>
   </div>
 </div>
+
+<div id="app"></div>
+
 <script>
-  /* Access profiles: password -> { hide: [ work shortnames to hide ] }.
-   * Add more passwords to grant different views. hide: [] sees everything;
-   * listing shortnames hides those works. Any collection or section left
-   * with no visible works is dropped automatically (handled in app.js).
-   *
-   * Example future restricted password:
-   *   'SOMEOTHERPASS': { hide: ['april-8th', 'a-good-deal'] }
-   */
-  var ACCESS = {
-    'GUAC6769HEAVY': { hide: [] }
-  };
+/* Not Name — encrypted access gate.
+ *
+ * There is no plaintext copy of the site on this host. payload.enc holds the
+ * markup, stylesheet, application code and every work, gzipped and encrypted
+ * with AES-GCM-256. The key is derived from the reader's password with
+ * PBKDF2-SHA256; a wrong password produces no key that can authenticate the
+ * ciphertext, so there is nothing to reveal by tampering with the client.
+ *
+ * payload.enc carries one entry per access profile. Each has its own salt and
+ * decrypts to only the works that profile may read.
+ */
+(function () {
+  'use strict';
 
-  function agUnlock() {
-    var el = document.getElementById('agPw');
-    var v = (el.value || '').trim();
-    var profile = ACCESS[v];
-    if (profile) {
-      document.getElementById('authgate').classList.add('hide');
-      document.getElementById('agErr').textContent = '';
-      if (window.NN && window.NN.unlock) window.NN.unlock(profile.hide || []);
-    } else {
-      document.getElementById('agErr').textContent = 'Incorrect password.';
-      el.value = '';
-    }
+  var form = document.getElementById('agForm');
+  var pwEl = document.getElementById('agPw');
+  var btn  = document.getElementById('agBtn');
+  var err  = document.getElementById('agErr');
+
+  var payloadPromise = null;
+
+  function b64ToBytes(s) {
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
   }
+
+  function getPayload() {
+    if (!payloadPromise) {
+      payloadPromise = fetch('./payload.enc', { cache: 'no-store' }).then(function (r) {
+        if (!r.ok) throw new Error('payload');
+        return r.json();
+      });
+    }
+    return payloadPromise;
+  }
+
+  function deriveKey(password, salt, iterations) {
+    return crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
+    ).then(function (material) {
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256' },
+        material,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+    });
+  }
+
+  function gunzip(bytes) {
+    var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(stream).arrayBuffer();
+  }
+
+  function tryProfile(password, payload, profile) {
+    return deriveKey(password, b64ToBytes(profile.salt), payload.iter)
+      .then(function (key) {
+        return crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: b64ToBytes(profile.iv) }, key, b64ToBytes(profile.ct)
+        );
+      })
+      .then(function (plain) { return payload.gzip ? gunzip(new Uint8Array(plain)) : plain; })
+      .then(function (buf) { return JSON.parse(new TextDecoder().decode(buf)); });
+  }
+
+  function unlock(password) {
+    return getPayload().then(function (payload) {
+      var chain = Promise.reject();
+      payload.profiles.forEach(function (profile) {
+        chain = chain.catch(function () { return tryProfile(password, payload, profile); });
+      });
+      return chain;
+    });
+  }
+
+  function boot(bundle) {
+    var style = document.createElement('style');
+    style.textContent = bundle.css;
+    document.head.appendChild(style);
+
+    document.getElementById('app').innerHTML = bundle.html;
+
+    var year = document.getElementById('footerYear');
+    if (year) year.textContent = new Date().getFullYear();
+
+    /* Serve the decrypted works to the app from memory; nothing is refetched. */
+    var nativeFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      var url = String(typeof input === 'string' ? input : (input && input.url) || '');
+      var key = url.replace(/^\.\//, '').replace(/^\//, '').split('?')[0];
+      if (Object.prototype.hasOwnProperty.call(bundle.data, key)) {
+        return Promise.resolve(new Response(bundle.data[key], {
+          status: 200, headers: { 'Content-Type': 'application/json' }
+        }));
+      }
+      return nativeFetch(input, init);
+    };
+
+    var script = document.createElement('script');
+    script.textContent = bundle.js;
+    document.body.appendChild(script);
+
+    if (window.NN && window.NN.unlock) window.NN.unlock(bundle.hide || []);
+
+    document.getElementById('authgate').classList.add('hide');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var password = (pwEl.value || '').trim();
+    if (!password) return;
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+    err.textContent = '';
+
+    unlock(password).then(function (bundle) {
+      boot(bundle);
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Enter';
+      err.textContent = 'Incorrect password.';
+      pwEl.value = '';
+      pwEl.focus();
+    });
+  });
+})();
 </script>
-
-  <div id="app">
-    <div id="itemPage" class="item-page" aria-live="polite"></div>
-    <div id="mainView" class="main-view">
-      <header>
-        <h1>Not Name</h1>
-        <p class="definition">My words will live longer lives than I.</p>
-        <p class="author-name">Yours,</p>
-        <div class="header-line"></div>
-      </header>
-      <nav id="mainNav" aria-label="Category navigation"></nav>
-      <main id="mainContent" aria-busy="true">Loading&hellip;</main>
-      <footer>
-        <p>Not Name (<span id="footerYear">2026</span>)</p>
-        <p class="footer-site"><a href="https://yashmoitra.com" target="_blank" rel="noopener noreferrer">yashmoitra.com</a></p>
-      </footer>
-    </div>
-  </div>
-
-  <script src="./app.js"></script>
-  <script>
-    document.getElementById("footerYear").textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>
