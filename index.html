@@ -74,11 +74,15 @@
       <nav id="mainNav" aria-label="Category navigation"></nav>
       <main id="mainContent" aria-busy="true">Loading&hellip;</main>
       <footer>
-        <p>Not Name (2026)</p>
+        <p>Not Name (<span id="footerYear">2026</span>)</p>
+        <p class="footer-site"><a href="https://yashmoitra.com" target="_blank" rel="noopener noreferrer">yashmoitra.com</a></p>
       </footer>
     </div>
   </div>
 
   <script src="./app.js"></script>
+  <script>
+    document.getElementById("footerYear").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
