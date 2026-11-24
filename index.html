@@ -15,8 +15,7 @@
     #authgate.hide { display: none; }
     #authgate .ag-card { width: 320px; max-width: 88vw; text-align: center; }
     #authgate h1 { font-family: Georgia, 'Times New Roman', serif; font-size: 32px; font-weight: normal;
-                   letter-spacing: 1px; margin: 0 0 6px; }
-    #authgate .ag-sub { font-size: 13px; color: #666; margin-bottom: 20px; }
+                   letter-spacing: 1px; margin: 0 0 26px; }
     #authgate input { width: 100%; font-family: monospace; font-size: 18px; letter-spacing: 3px;
                       text-align: center; padding: 11px; border: 1px solid #ccc; border-radius: 6px;
                       margin-bottom: 10px; background: #fff; color: #000; }
@@ -25,7 +24,6 @@
     #authgate button:hover { background: #333; }
     #authgate button[disabled] { background: #666; border-color: #666; cursor: default; }
     #authgate .ag-err { font-size: 13px; color: #b00; min-height: 18px; margin-top: 10px; }
-    #authgate .ag-note { font-size: 11px; color: #999; margin-top: 18px; }
   </style>
 </head>
 <body>
@@ -33,13 +31,11 @@
 <div id="authgate">
   <div class="ag-card">
     <h1>Not Name</h1>
-    <div class="ag-sub">Private</div>
     <form id="agForm" autocomplete="off">
       <input id="agPw" type="password" placeholder="Password" autocomplete="off" autofocus />
       <button id="agBtn" type="submit">Enter</button>
     </form>
     <div class="ag-err" id="agErr"></div>
-    <div class="ag-note">Access is limited to invited readers.</div>
   </div>
 </div>
 
